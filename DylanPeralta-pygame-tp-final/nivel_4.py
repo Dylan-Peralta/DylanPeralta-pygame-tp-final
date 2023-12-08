@@ -1,5 +1,5 @@
 from player import *
-from Enemigo_dos import *
+from jefe import *
 from Controles import *
 from sprite import *
 from Monedas import *
@@ -8,6 +8,7 @@ from menu import *
 from config import*
 from disparo import *
 from sonidos import *
+import random
 pg.init()
 
 def lvl_cuatro():
@@ -18,43 +19,13 @@ def lvl_cuatro():
     inicio_juego = True
     fin_del_juegoo = True
 
-
-    #MONEDAS
-    cordenadas_monedas = [
-        (150,700),
-        (250,700),
-        (350,700),
-
-        (450,400),
-        (1075,400),
-        (1000,400),
-        (925,300),
-        (850,300),
-        (200,300),
-        (300,500),
-        (400,500),
-        (550,500),
-        (650,500),
-        (750,500),
-        (1615,500),
-        (1455,500),
-        (1300,500),
-
-        (750,200),
-        (905,200),
-        (1065,200)
-    ]
-    
     #PLAYER
     PERSONAJE = Jugador(0, 950)
 
     #ENEMIGO
     lista_enemigo = []
-    ENEMIGO = Enemigo(700,950)
-    # ENEMIGO_DOS = Enemigo(900,950)
-    # ENEMIGO_TRES = Enemigo(600,950)
-    # ENEMIGO_CUATRO = Enemigo(400,950)
-
+    ENEMIGO = Jefe(random.randint(0, ANCHO_PANTALLA - 50),random.randint(0, ALTO_PANTALLA - 50))
+    
     lista_enemigo.append(ENEMIGO)
     
 
@@ -65,26 +36,10 @@ def lvl_cuatro():
                 (250,820,2,5),
                 (400,820,2,5),
 
-                (100,400,2,5),
-                (250,400,2,5),
-                (400,400,2,5),
-
-                (750,700,2,5),
-                
-                (1050,700,2,5),
-
-                
-                (ANCHO_PANTALLA-200,400,2,5),
-                (ANCHO_PANTALLA-350,400,2,5),
-                (ANCHO_PANTALLA-490,400,2,5),
-
                 (ANCHO_PANTALLA-200,820,2,5),
                 (ANCHO_PANTALLA-350,820,2,5),
                 (ANCHO_PANTALLA-490,820,2,5),
 
-                (750,175,2,5),
-                
-                (1050,175,2,5)
                 
     ]
 
@@ -94,30 +49,14 @@ def lvl_cuatro():
         plataforma = Plataforma_tierra(coordenada_x, coordenada_y, ancho, alto)
         lista_plataformas.append(plataforma)
 
-    lista_monedas = []
-    for coordenada_x, coordenada_y in cordenadas_monedas:
-        monedas = Monedas(coordenada_x, coordenada_y)
-        lista_monedas.append(monedas)
-    
-    # lista_plataformas_piedra = [
-    #     Plataforma_piedra(175,1000),
-    #     Plataforma_piedra(175,900),
-    #     Plataforma_piedra(175,800)
-
-    # ]
 
     puntuacion = 0
 
     enfriamiento_colision = False
     tiempo_enfriamiento = 1500
     
-    tiempo_ultimo_disparo = 1000 
-    
     grupo_disparos = pg.sprite.Group()
 
-    
-    
-    
     
     while inicio_juego:
         delta_ms = clock.tick(FPS)
@@ -141,7 +80,7 @@ def lvl_cuatro():
         
 
         #### FONDO ####
-        fondo()
+        fondo_cuatro()
 
 
         #### TIEMPO EN PANTALLA ####
@@ -169,33 +108,13 @@ def lvl_cuatro():
             if isinstance(plataforma, Plataforma_tierra):  
                 plataforma.dibujar_plataforma_tierra(PANTALLA)
 
-        # for plataforma_piedra in lista_plataformas_piedra:
-        #     if isinstance(plataforma_piedra, Plataforma_piedra):  
-        #         plataforma_piedra.dibujar_plataforma_piedra(PANTALLA)
-
-        
-
-
-        #### MONEDAS COLISION ###
-        for monedas in lista_monedas:
-            monedas.update(delta_ms)   
-            monedas.dibujar(PANTALLA)
-
-        for moneda in lista_monedas:
-            if PERSONAJE.obtener_rectangulo().colliderect(moneda.obtener_rectangulo_moneda())and not moneda.recogida:
-                sound_manager = SoundManager()
-                moneda.recogida = True
-                sound_manager.play_moneda_sound()
-                puntuacion += 10 
-                lista_monedas.remove(moneda)
-
         #### ENEMIGOS COLISION ####
         for enemigo in lista_enemigo:
             if PERSONAJE.obtener_rectangulo().colliderect(enemigo.obtener_rectangulo()):
                 if not enfriamiento_colision:
                     sound_manager = SoundManager()
                     sound_manager.play_daño_personaje()
-                    PERSONAJE.vida -= 10
+                    PERSONAJE.vida -= 30
                     if PERSONAJE.vida == 0:
                         fin_del_juegoo = False
                         if fin_del_juegoo == False:
@@ -218,16 +137,14 @@ def lvl_cuatro():
                 disparo.update()
                 for enemigo in lista_enemigo:
                     if disparo.rect.colliderect(enemigo.obtener_rectangulo()):
-                        enemigo.vida_total -= 20
+                        enemigo.vida_total -= 200
                         PERSONAJE.bolsa_municion.remove(x)
                         print('Le diste a un enemigo')
 
                         if enemigo.vida_total <= 0:
                             lista_enemigo.remove(enemigo)
                             print('Mataste a un enemigo')
-
                         grupo_disparos.remove(disparo)  
-
                         break
 
         #### PLATAFORMA COLISIONES ####
@@ -240,21 +157,11 @@ def lvl_cuatro():
                     PERSONAJE.aplicar_gravedad(plataforma.obtener_rectangulo_plataforma().top)
                     PERSONAJE.establecer_estado_saltando(True)
                     # PERSONAJE.establecer_velocidad_y(0)
-                       
-
-                    
-                
-
         
         #### BARRA DE VIDA ####          
         dibujar_barra_vida(PANTALLA, PERSONAJE)
 
-        
-
-
         PANTALLA.blit(forma_texto_tiempo.render(f'Puntaje {puntuacion} ', False, 'RED'), (1100,25))
-
-
 
     #### PANTALLA GAME OVER ####
         if fin_del_juegoo == False:

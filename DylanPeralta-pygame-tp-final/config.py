@@ -44,11 +44,26 @@ def musica_level_uno():
     pg.mixer.music.set_volume(0.5)
 
 #### FONDO ####
-def fondo():
+def fondo_uno():
     fondoo = pg.image.load('C:/Users/Dylan/Desktop/DylanPeralta-pygame-tp-final/elementos_juego/imagenes/entorno/level9.jpg')
     fondoo = pg.transform.scale(fondoo,(ANCHO_PANTALLA, ALTO_PANTALLA))
     PANTALLA.blit(fondoo,(0,0))
 
+def fondo_dos():
+    fondoo = pg.image.load('C:/Users/Dylan/Desktop/DylanPeralta-pygame-tp-final/elementos_juego/imagenes/entorno/level1.jpg')
+    fondoo = pg.transform.scale(fondoo,(ANCHO_PANTALLA, ALTO_PANTALLA))
+    PANTALLA.blit(fondoo,(0,0))    
+
+def fondo_tres():
+    fondoo = pg.image.load('C:/Users/Dylan/Desktop/DylanPeralta-pygame-tp-final/elementos_juego/imagenes/entorno/level13.jpg')
+    fondoo = pg.transform.scale(fondoo,(ANCHO_PANTALLA, ALTO_PANTALLA))
+    PANTALLA.blit(fondoo,(0,0)) 
+    
+def fondo_cuatro():
+    fondoo = pg.image.load('C:/Users/Dylan/Desktop/DylanPeralta-pygame-tp-final/elementos_juego/imagenes/entorno/level14.jpg')
+    fondoo = pg.transform.scale(fondoo,(ANCHO_PANTALLA, ALTO_PANTALLA))
+    PANTALLA.blit(fondoo,(0,0))  
+    
 #### FIN DEL JUEGO ####
 def fin_del_juego(puntaje):
     sound_manager = SoundManager()

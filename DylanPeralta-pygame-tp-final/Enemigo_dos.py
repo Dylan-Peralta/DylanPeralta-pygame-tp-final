@@ -1,11 +1,11 @@
 from sprite import Auxiliar
 import pygame as pg
-from config import (ANCHO_PANTALLA)
+from config import (ANCHO_PANTALLA, ALTO_PANTALLA)
 
 
 
 class Enemigo:
-    def __init__(self, coordenada_x, coordenada_y, velocidad = 5, vida_total = 100):
+    def __init__(self, coordenada_x, coordenada_y, velocidad = 5, vida_total = 100, gravedad = 1):
         self.__caminar_der = Auxiliar.obtener_superficie_desde_sprite('C:/Users/Dylan/Desktop/DylanPeralta-pygame-tp-final/elementos_juego/imagenes/enemigo/caminar_enemigo.png', 11, 1, voltear=True)
         self.__caminar_izq = Auxiliar.obtener_superficie_desde_sprite('C:/Users/Dylan/Desktop/DylanPeralta-pygame-tp-final/elementos_juego/imagenes/enemigo/caminar_enemigo.png', 11, 1, voltear=False)
 
@@ -32,6 +32,10 @@ class Enemigo:
 
         self.ancho_barra_vida = 50
         self.altura_barra_vida = 5
+
+        self.__gravedad = gravedad 
+        self.velocidad_y = 0
+        self.daño = -20
 
 
     def hacer_movimiento(self, delta_ms):
@@ -67,15 +71,26 @@ class Enemigo:
             else:
                 self.__cuadro_inicial = 0
 
+    def aplicar_gravedad(self):
+        self.velocidad_y += self.__gravedad
+        self.__rect.y += self.velocidad_y
+        if self.velocidad_y > 10:
+            self.velocidad_y = 10        
+        if self.__rect.bottom >= ALTO_PANTALLA:  
+            self.__rect.bottom = ALTO_PANTALLA
+            self.velocidad_y = 0 
+
+
     def update(self, delta_ms):
         self.hacer_movimiento(delta_ms)
         self.hacer_animación(delta_ms)
+        self.aplicar_gravedad()
 
     def dibujar(self, pantalla: pg.surface.Surface):
         pantalla.blit(self.__animacion_actual[self.__cuadro_inicial], self.__rect)
         rectangulo_enemigo = self.obtener_rectangulo()
         pg.draw.rect(pantalla, (255, 0, 0), rectangulo_enemigo, 2)
-        longitud_vida = self.vida_total  # Valor máximo de la vida
+        longitud_vida = self.daño  # Valor máximo de la vida
         vida_actual = max(self.vida_actual, 0)  # Asegurar que la vida no sea negativa
         longitud_barra = (vida_actual / longitud_vida) * self.ancho_barra_vida
 

@@ -143,7 +143,7 @@ def lvl_dos():
 
 
         #### FONDO ####
-        fondo()
+        fondo_dos()
 
 
         #### TIEMPO EN PANTALLA ####

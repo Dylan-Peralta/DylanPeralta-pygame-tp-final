@@ -9,6 +9,8 @@ from config import*
 from disparo import *
 from sonidos import *
 from menu_lvl import *
+from trampas import *
+import random
 pg.init()
 
 
@@ -52,15 +54,23 @@ def lvl_uno():
 
     #ENEMIGO
     lista_enemigo = []
-    ENEMIGO = Enemigo(700,950)
-    ENEMIGO_DOS = Enemigo(900,950)
-    ENEMIGO_TRES = Enemigo(600,950)
-    ENEMIGO_CUATRO = Enemigo(400,950)
+    ENEMIGO = Enemigo(random.randint(0, ANCHO_PANTALLA - 50),random.randint(0, ALTO_PANTALLA - 50))
+    ENEMIGO_DOS = Enemigo(random.randint(0, ANCHO_PANTALLA - 50),random.randint(0, ALTO_PANTALLA - 50))
+    ENEMIGO_TRES = Enemigo(random.randint(0, ANCHO_PANTALLA - 50),random.randint(0, ALTO_PANTALLA - 50))
+    ENEMIGO_CUATRO = Enemigo(random.randint(0, ANCHO_PANTALLA - 50),random.randint(0, ALTO_PANTALLA - 50))
 
     lista_enemigo.append(ENEMIGO)
     lista_enemigo.append(ENEMIGO_DOS)
     lista_enemigo.append(ENEMIGO_TRES)
     lista_enemigo.append(ENEMIGO_CUATRO)
+
+    #TRAMPAS
+    cordenadas_trampas= [
+        (100,700,2,5),
+        (250,700,2,5),
+        (400,700,2,5),
+
+        ]
 
     #PLATAFORMA
 
@@ -86,9 +96,7 @@ def lvl_uno():
                 (ANCHO_PANTALLA-350,820,2,5),
                 (ANCHO_PANTALLA-490,820,2,5),
 
-                (750,175,2,5),
                 
-                (1050,175,2,5)
                 
     ]
 
@@ -103,21 +111,22 @@ def lvl_uno():
         monedas = Monedas(coordenada_x, coordenada_y)
         lista_monedas.append(monedas)
     
-    # lista_plataformas_piedra = [
-    #     Plataforma_piedra(175,1000),
-    #     Plataforma_piedra(175,900),
-    #     Plataforma_piedra(175,800)
+    lista_trampas = []
+    for coordenada_x, coordenada_y, ancho, alto in cordenadas_trampas:
+        plataforma = Trampas(coordenada_x, coordenada_y, ancho, alto)
+        lista_trampas.append(plataforma)
 
-    # ]
+    
 
     puntuacion = 0
 
     enfriamiento_colision = False
     tiempo_enfriamiento = 1500
+    enfriamiento_colision_trampas = False
+    tiempo_enfriamiento_trampas = 3000
     
     grupo_disparos = pg.sprite.Group()
 
-    todas_las_monedas_recolectadas = True
     
     
     while inicio_juego:
@@ -143,17 +152,7 @@ def lvl_uno():
         
                             
         #### FONDO ####
-        fondo()
-        
-
-        for moneda in lista_monedas:
-            if not moneda.recogida:
-                todas_las_monedas_recolectadas = False
-                break
-
-        if todas_las_monedas_recolectadas:
-            PANTALLA.blit(forma_texto_tiempo.render(f'RECOLECTASTE TODAS LAS MONEDAS ', False, 'White'), (20,25))
-            return
+        fondo_uno()
 
         #### TIEMPO EN PANTALLA ####
         PANTALLA.blit(forma_texto_tiempo.render(f'Tiempo {tiempo_restante} ', False, 'White'), (20,25))
@@ -163,7 +162,16 @@ def lvl_uno():
             enemigo.update(delta_ms)
             enemigo.dibujar(PANTALLA)
             
-        
+
+        ### PLATAFORMAS ###
+        for plataforma in lista_plataformas:
+            if isinstance(plataforma, Plataforma_tierra):  
+                plataforma.dibujar_plataforma_tierra(PANTALLA)
+
+        for trampas in lista_trampas:
+            if isinstance(trampas, Trampas):  
+                trampas.dibujar_trampa_tierra(PANTALLA)      
+
         #### PERSONAJE Y CONTROLES DEL MISMOO ###
         PERSONAJE.actualizar(delta_ms,lista_plataformas)
         PERSONAJE.dibujar(PANTALLA)
@@ -173,19 +181,6 @@ def lvl_uno():
         Controles.control_personaje(PERSONAJE)
 
         Controles.controles_volumen()
-                
-
-        #### PLATAFORMAS ###
-        for plataforma in lista_plataformas:
-            if isinstance(plataforma, Plataforma_tierra):  
-                plataforma.dibujar_plataforma_tierra(PANTALLA)
-
-        # for plataforma_piedra in lista_plataformas_piedra:
-        #     if isinstance(plataforma_piedra, Plataforma_piedra):  
-        #         plataforma_piedra.dibujar_plataforma_piedra(PANTALLA)
-
-        
-
 
         #### MONEDAS COLISION ###
         for monedas in lista_monedas:
@@ -220,8 +215,7 @@ def lvl_uno():
                 enfriamiento_colision = False
 
         ######### DISPARO #############
-        
-        
+
         for x in PERSONAJE.bolsa_municion.copy():  
             x.dibujar(PANTALLA)
             x.update()
@@ -252,10 +246,30 @@ def lvl_uno():
                     PERSONAJE.aplicar_gravedad(plataforma.obtener_rectangulo_plataforma().top)
                     PERSONAJE.establecer_estado_saltando(True)
                     # PERSONAJE.establecer_velocidad_y(0)
-        
+
+        #### TRAMPAS COLISIONES ####            
+        for trampas in lista_trampas:
+            if PERSONAJE.obtener_rectangulo().colliderect(trampas.obtener_rectangulo_trampa()):
+                if not enfriamiento_colision_trampas:
+                    sound_manager = SoundManager()
+                    sound_manager.play_daño_personaje()
+                    PERSONAJE.vida -= 5
+                    if PERSONAJE.vida == 0:
+                        fin_del_juegoo = False
+                        if fin_del_juegoo == False:
+                            fin_del_juego(puntuacion)
+                    enfriamiento_colision_trampas = True
+                    tiempo_inicio_enfriamiento_trampas = pg.time.get_ticks()  
+
+        if enfriamiento_colision_trampas:
+            tiempo_actual = pg.time.get_ticks()
+            if tiempo_actual - tiempo_inicio_enfriamiento_trampas >= tiempo_enfriamiento_trampas:
+                enfriamiento_colision_trampas = False
+
         #### BARRA DE VIDA ####          
         dibujar_barra_vida(PANTALLA, PERSONAJE)
         PANTALLA.blit(forma_texto_tiempo.render(f'Puntaje {puntuacion} ', False, 'RED'), (1100,25))
+
 
 
     #### PANTALLA GAME OVER ####

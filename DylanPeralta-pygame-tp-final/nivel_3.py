@@ -142,7 +142,7 @@ def lvl_tres():
 
         
         #### FONDO ####
-        fondo()
+        fondo_tres()
 
 
         #### TIEMPO EN PANTALLA ####
