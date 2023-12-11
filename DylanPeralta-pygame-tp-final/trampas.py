@@ -1,12 +1,10 @@
-from sprite import Auxiliar
 import pygame as pg
-from config import (ANCHO_PANTALLA, ALTO_PANTALLA)
 from COLORES import *
 
 class Trampas:
     
     def __init__(self, coordenada_x, coordenada_y, ancho, alto):
-        self.__trampas = pg.image.load('C:/Users/Dylan/Desktop/DylanPeralta-pygame-tp-final/elementos_juego/imagenes/entorno/trampas/trampa.png') 
+        self.__trampas = pg.image.load('C:/Users/Dylan/Desktop/DylanPeralta-pygame-tp-final/elementos_juego/imagenes/entorno/trampas/pinches.png') 
         self.__rect = self.__trampas.get_rect()
         self.__rect.centerx = coordenada_x
         self.__rect.centery = coordenada_y
@@ -31,8 +29,7 @@ class Trampas:
 
     def dibujar_trampa_tierra(self, pantalla: pg.surface.Surface):
         pantalla.blit(self.__trampas, (self.__rect.x, self.__rect.y))
-        pg.draw.rect(pantalla, BLUE, self.rect_visible)
-        pg.draw.rect(pantalla, RED, self.rect_invisible,5)
+        
         
         
 

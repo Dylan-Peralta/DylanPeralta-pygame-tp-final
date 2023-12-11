@@ -8,6 +8,9 @@ from menu import *
 from config import*
 from disparo import *
 from sonidos import *
+import random
+from ranking_tres import *
+from trampas import *
 pg.init()
 
 def lvl_dos():
@@ -50,10 +53,10 @@ def lvl_dos():
 
     #ENEMIGO
     lista_enemigo = []
-    ENEMIGO = Enemigo(700,950)
-    ENEMIGO_DOS = Enemigo(900,950)
-    ENEMIGO_TRES = Enemigo(600,950)
-    ENEMIGO_CUATRO = Enemigo(400,950)
+    ENEMIGO = Enemigo(random.randint(0, ANCHO_PANTALLA - 50),random.randint(0, ALTO_PANTALLA - 50))
+    ENEMIGO_DOS = Enemigo(random.randint(0, ANCHO_PANTALLA - 50),random.randint(0, ALTO_PANTALLA - 50))
+    ENEMIGO_TRES = Enemigo(random.randint(0, ANCHO_PANTALLA - 50),random.randint(0, ALTO_PANTALLA - 50))
+    ENEMIGO_CUATRO = Enemigo(random.randint(0, ANCHO_PANTALLA - 50),random.randint(0, ALTO_PANTALLA - 50))
 
     lista_enemigo.append(ENEMIGO)
     lista_enemigo.append(ENEMIGO_DOS)
@@ -80,9 +83,9 @@ def lvl_dos():
                 # (ANCHO_PANTALLA-350,400,2,5),
                 # (ANCHO_PANTALLA-490,400,2,5),
 
-                # (ANCHO_PANTALLA-200,820,2,5),
-                # (ANCHO_PANTALLA-350,820,2,5),
-                # (ANCHO_PANTALLA-490,820,2,5),
+                (ANCHO_PANTALLA-200,820,2,5),
+                (ANCHO_PANTALLA-350,820,2,5),
+                (ANCHO_PANTALLA-490,820,2,5),
 
                 (750,175,2,5),
                 
@@ -90,6 +93,20 @@ def lvl_dos():
                 
     ]
 
+        #TRAMPAS
+    cordenadas_trampas= [
+            (ANCHO_PANTALLA-200,780,2,5),
+            (ANCHO_PANTALLA-370,780,2,5),
+            
+
+            ]
+    lista_trampas = []
+    for coordenada_x, coordenada_y, ancho, alto in cordenadas_trampas:
+            plataforma = Trampas(coordenada_x, coordenada_y, ancho, alto)
+            lista_trampas.append(plataforma)
+
+    enfriamiento_colision_trampas = False
+    tiempo_enfriamiento_trampas = 3000
 
     lista_plataformas = []
     for coordenada_x, coordenada_y, ancho, alto in cordenadas_plataformas:
@@ -100,27 +117,13 @@ def lvl_dos():
     for coordenada_x, coordenada_y in cordenadas_monedas:
         monedas = Monedas(coordenada_x, coordenada_y)
         lista_monedas.append(monedas)
-    
-    # lista_plataformas_piedra = [
-    #     Plataforma_piedra(175,1000),
-    #     Plataforma_piedra(175,900),
-    #     Plataforma_piedra(175,800)
-
-    # ]
 
     puntuacion = 0
 
     enfriamiento_colision = False
     tiempo_enfriamiento = 1500
-    
-    tiempo_ultimo_disparo = 1000 
-    
     grupo_disparos = pg.sprite.Group()
 
-    
-    
-    
-    
     while inicio_juego:
         delta_ms = clock.tick(FPS)
         
@@ -138,13 +141,12 @@ def lvl_dos():
             tiempo_restante = 60-((tiempo_transcurrido - juego_iniciado) // 1000)
                 
             if tiempo_restante <= 0:
+                nombre_jugador = input("Ingresa tu nombre: ") 
+                guardar_sql(nombre_jugador, puntuacion)
                 fin_del_juegoo = False
-
-
 
         #### FONDO ####
         fondo_dos()
-
 
         #### TIEMPO EN PANTALLA ####
         PANTALLA.blit(forma_texto_tiempo.render(f'Tiempo {tiempo_restante} ', False, 'White'), (20,25))
@@ -170,12 +172,10 @@ def lvl_dos():
         for plataforma in lista_plataformas:
             if isinstance(plataforma, Plataforma_tierra):  
                 plataforma.dibujar_plataforma_tierra(PANTALLA)
-
-        # for plataforma_piedra in lista_plataformas_piedra:
-        #     if isinstance(plataforma_piedra, Plataforma_piedra):  
-        #         plataforma_piedra.dibujar_plataforma_piedra(PANTALLA)
-
-        
+        ### TRAMPAS ###
+        for trampas in lista_trampas:
+            if isinstance(trampas, Trampas):  
+                trampas.dibujar_trampa_tierra(PANTALLA)      
 
 
         #### MONEDAS COLISION ###
@@ -199,6 +199,8 @@ def lvl_dos():
                     sound_manager.play_daño_personaje()
                     PERSONAJE.vida -= 10
                     if PERSONAJE.vida == 0:
+                        nombre_jugador = input("Ingresa tu nombre: ") 
+                        guardar_sql(nombre_jugador, puntuacion)
                         fin_del_juegoo = False
                         if fin_del_juegoo == False:
                             fin_del_juego(puntuacion)
@@ -210,7 +212,7 @@ def lvl_dos():
             if tiempo_actual - tiempo_inicio_enfriamiento >= tiempo_enfriamiento:
                 enfriamiento_colision = False
 
-       ######### DISPARO #############
+    ######### DISPARO #############
 
         for x in PERSONAJE.bolsa_municion.copy():  
             x.dibujar(PANTALLA)
@@ -220,11 +222,13 @@ def lvl_dos():
                 disparo.update()
                 for enemigo in lista_enemigo:
                     if disparo.rect.colliderect(enemigo.obtener_rectangulo()):
-                        enemigo.vida_total -= 20
+                        daño = 20
+                        enemigo.recibir_vida_recibido(daño)
                         PERSONAJE.bolsa_municion.remove(x)
                         print('Le diste a un enemigo')
 
-                        if enemigo.vida_total <= 0:
+                        if enemigo.vida_actual <= 0:
+                            puntuacion += 100 
                             lista_enemigo.remove(enemigo)
                             print('Mataste a un enemigo')
 
@@ -241,22 +245,32 @@ def lvl_dos():
                     PERSONAJE.establecer_posicion_y(plataforma.obtener_rectangulo_plataforma().top + PERSONAJE.obtener_alto())
                     PERSONAJE.aplicar_gravedad(plataforma.obtener_rectangulo_plataforma().top)
                     PERSONAJE.establecer_estado_saltando(True)
-                    # PERSONAJE.establecer_velocidad_y(0)
-                       
-
                     
-                
+        #### TRAMPAS COLISIONES ####            
+        for trampas in lista_trampas:
+            if PERSONAJE.obtener_rectangulo().colliderect(trampas.obtener_rectangulo_trampa()):
+                if not enfriamiento_colision_trampas:
+                    sound_manager = SoundManager()
+                    sound_manager.play_daño_personaje()
+                    PERSONAJE.vida -= 5
+                    if PERSONAJE.vida == 0:
+                        nombre_jugador = input("Ingresa tu nombre: ") 
+                        guardar_sql(nombre_jugador, puntuacion)
+                        fin_del_juegoo = False
+                        if fin_del_juegoo == False:
+                            fin_del_juego(puntuacion)
+                    enfriamiento_colision_trampas = True
+                    tiempo_inicio_enfriamiento_trampas = pg.time.get_ticks()  
 
-        
+        if enfriamiento_colision_trampas:
+            tiempo_actual = pg.time.get_ticks()
+            if tiempo_actual - tiempo_inicio_enfriamiento_trampas >= tiempo_enfriamiento_trampas:
+                enfriamiento_colision_trampas = False            
+
         #### BARRA DE VIDA ####          
         dibujar_barra_vida(PANTALLA, PERSONAJE)
 
-        
-
-
         PANTALLA.blit(forma_texto_tiempo.render(f'Puntaje {puntuacion} ', False, 'RED'), (1100,25))
-
-
 
     #### PANTALLA GAME OVER ####
         if fin_del_juegoo == False:

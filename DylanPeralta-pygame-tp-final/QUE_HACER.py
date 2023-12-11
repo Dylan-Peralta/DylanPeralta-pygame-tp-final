@@ -1,3 +1,3 @@
-#hacer los enemigos aleatorios 
-#trampas
 #Ranking
+#enemigos random
+#trampas

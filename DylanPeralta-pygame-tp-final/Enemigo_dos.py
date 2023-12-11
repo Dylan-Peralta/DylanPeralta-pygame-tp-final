@@ -80,24 +80,28 @@ class Enemigo:
             self.__rect.bottom = ALTO_PANTALLA
             self.velocidad_y = 0 
 
-    def reducir_vida(self, cantidad):
-        self.vida -= cantidad
-        if self.vida <= 0:
-            pass
+    def recibir_vida_recibido(self, cantidad_vida_recibido):
+        self.vida_actual -= cantidad_vida_recibido
+        if self.vida_actual < 0:
+            self.vida_actual = 0
+
 
     def update(self, delta_ms):
         self.hacer_movimiento(delta_ms)
         self.hacer_animación(delta_ms)
         self.aplicar_gravedad()
 
-    def dibujar(self, pantalla: pg.surface.Surface,cantidad):
+    def dibujar(self, pantalla: pg.surface.Surface):
         pantalla.blit(self.__animacion_actual[self.__cuadro_inicial], self.__rect)
         rectangulo_enemigo = self.obtener_rectangulo()
         pg.draw.rect(pantalla, (255, 0, 0), rectangulo_enemigo, 2)
-        longitud_vida =  self.vida_total  
-        vida_actual = max(self.vida_actual, 0)  
-        longitud_barra = (vida_actual / longitud_vida) * self.ancho_barra_vida - self.reducir_vida(cantidad)
-        
-        pg.draw.rect(pantalla, (255, 0, 0), (self.__rect.x, self.__rect.y - 20, longitud_barra, self.altura_barra_vida))
 
-        pg.draw.rect(pantalla, (0, 255, 0), (self.__rect.x, self.__rect.y - 20, self.ancho_barra_vida, self.altura_barra_vida))
+        vida_actual = max(self.vida_actual, 0)
+        longitud_vida = max(self.vida_total, 1)  
+        longitud_barra = (vida_actual / longitud_vida) * self.ancho_barra_vida
+        ancho_restante = self.ancho_barra_vida - longitud_barra
+        if longitud_barra <= 0:
+            longitud_barra = 0
+            ancho_restante = self.ancho_barra_vida
+        pg.draw.rect(pantalla, (0, 255, 0), (self.__rect.x, self.__rect.y - 20, longitud_barra, 10))
+        pg.draw.rect(pantalla, (255, 0, 0), (self.__rect.x + longitud_barra, self.__rect.y - 20, ancho_restante, 10))

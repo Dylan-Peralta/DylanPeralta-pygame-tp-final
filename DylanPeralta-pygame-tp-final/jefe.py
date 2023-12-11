@@ -70,7 +70,12 @@ class Jefe:
             else:
                 self.__cuadro_inicial = 0
 
-    
+    def recibir_vida_recibido(self, cantidad_vida_recibido):
+        self.vida_actual -= cantidad_vida_recibido
+        if self.vida_actual < 0:
+            self.vida_actual = 0
+
+
     def aplicar_gravedad(self):
         self.velocidad_y += self.__gravedad
         self.__rect.y += self.velocidad_y
@@ -90,10 +95,13 @@ class Jefe:
         rectangulo_enemigo = self.obtener_rectangulo()
         pg.draw.rect(pantalla, (255, 0, 0), rectangulo_enemigo, 2)
         
-
-        longitud_vida = self.vida_total  
-        vida_actual = max(self.vida_actual, 0)  
+        vida_actual = max(self.vida_actual, 0)
+        longitud_vida = max(self.vida_total, 1)  
         longitud_barra = (vida_actual / longitud_vida) * self.ancho_barra_vida
+        ancho_restante = self.ancho_barra_vida - longitud_barra
+        if longitud_barra <= 0:
+            longitud_barra = 0
+            ancho_restante = self.ancho_barra_vida
         pg.draw.rect(pantalla, (0, 255, 0), (self.__rect.x, self.__rect.y - 20, longitud_barra, 10))
-        pg.draw.rect(pantalla, (255, 0, 0), (self.__rect.x, self.__rect.y - 20, self.ancho_barra_vida, self.altura_barra_vida))
+        pg.draw.rect(pantalla, (255, 0, 0), (self.__rect.x + longitud_barra, self.__rect.y - 20, ancho_restante, 10))
         

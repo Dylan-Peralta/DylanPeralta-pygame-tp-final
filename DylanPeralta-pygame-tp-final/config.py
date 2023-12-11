@@ -1,6 +1,7 @@
 import pygame as pg
 from COLORES import *
 from sonidos import *
+
 FPS = 30
 
 #### PANTALLA ####
@@ -74,12 +75,6 @@ def fin_del_juego(puntaje):
     PANTALLA.blit(fondo_game_over,(0,0))
     PANTALLA.blit(forma_texto_fin.render(f'Game Over', False, 'White'), (560, 300))
     PANTALLA.blit(forma_texto_fin.render(f'Puntaje: {puntaje}', False, 'White'), (560, 600))
-    
-    # boton_volver = pg.Rect(ANCHO_PANTALLA/2 -220, 890, 400, 50)
-    # pg.draw.rect(PANTALLA, (255, 0, 0), boton_volver)  
-    # font = pg.font.Font(None, 36)
-    # PANTALLA.blit(font.render(f'Volver a selección de niveles', True, (255, 255, 255)), (ANCHO_PANTALLA/2 -200, 900))
-
     if not game_over_played:
         sound_manager.play_game_over_sound()
         game_over_played = True

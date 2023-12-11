@@ -6,10 +6,16 @@ from COLORES import *
 from config import *
 from nivel_1 import *
 game_active = False
+
+mostrar_ranking = False
+boton_ranking_clickeado = False
+
 class Menu:
 
     def main_menu():
         global game_active
+        global mostrar_ranking 
+        global boton_ranking_clickeado
         icon_y_titulo()
         # musica_level_uno()
         
@@ -40,15 +46,29 @@ class Menu:
                 pg.draw.rect(PANTALLA, BLACK, button_settings)
             else:
                 pg.draw.rect(PANTALLA, RED, button_settings)
-
+            
             if button_ranking.collidepoint((mx, my)):
                 if pg.mouse.get_pressed()[0]:
-                    pass
-
+                    mostrar_ranking = not mostrar_ranking
+                if mostrar_ranking:
+                    cuadro_ranking = pg.Rect(200, 50, 600, 500)  
+                    pg.draw.rect(PANTALLA, BLACK, cuadro_ranking)  
+                    resultados = obtener_ranking()
+                    forma_texto = pg.font.Font(None, 36)
+                    pos_y = 70  
+                    for i, resultado in enumerate(resultados, 1):
+                        if i > 10: 
+                            break
+                        nombre = resultado[0]
+                        puntuacion = resultado[1]
+                        texto = f"{i}. {nombre} - Puntuación: {puntuacion}"
+                        texto_renderizado = forma_texto.render(texto, True, WHITE)
+                        PANTALLA.blit(texto_renderizado, (250, pos_y))  
+                        pos_y += 40
                 pg.draw.rect(PANTALLA, BLACK, button_ranking)
             else:
                 pg.draw.rect(PANTALLA, RED, button_ranking)
-
+                
             if button_exit.collidepoint((mx, my)):
                 if pg.mouse.get_pressed()[0]:
                     pg.quit()

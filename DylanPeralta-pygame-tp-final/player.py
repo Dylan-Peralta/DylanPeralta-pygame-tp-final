@@ -44,7 +44,7 @@ class Jugador:
 
         self.__rect.centerx=0
         self.__rect.centery=0
-        self.vida = 100
+        self.vida = 10
         self.en_suelo = True
         self.bolsa_municion = []
         self.ultimo_disparo = 0 
